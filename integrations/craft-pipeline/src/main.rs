@@ -16,7 +16,6 @@ use std::{
 };
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
 struct Receipt {
     schema: String,
     success: bool,
