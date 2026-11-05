@@ -73,12 +73,12 @@ fn main() {
 fn execute() -> Result<(), String> {
     let args: Vec<String> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "help" || args[0] == "--help" {
-        println!("TitanU Craft Inspector\n  commands\n  doctor\n  inspect <local-file> [--deep]\n\nDefaults to clean-room. --deep is only for targets you own or are authorized to inspect.\nAll results and SHA256 receipts go to TITAN_CRAFT_PROOF_DIR (default ./proof/craft).\nNo generated code is executed or deployed.");
+        println!("TitanU Craft Inspector\n  commands\n  doctor\n  inspect <local-file> [--deep]\n\nLocal file triage requires explicit --deep and authorization. Without it, inspection is refused.\nAll results and SHA256 receipts go to TITAN_CRAFT_PROOF_DIR (default ./proof/craft).\nNo generated code is executed or deployed.");
         return Ok(());
     }
     let (operation, target, deep) = match args.as_slice() {
         [op] if op == "commands" || op == "doctor" => (op.as_str(), None, false),
-        [op, file] if op == "inspect" => ("triage", Some(file.as_str()), false),
+        [op, _file] if op == "inspect" => return Err("Craft CLI refuses local-file triage in clean-room; use inspect <file> --deep only for authorized targets".into()),
         [op, file, flag] if op == "inspect" && flag == "--deep" => ("triage", Some(file.as_str()), true),
         _ => return Err("usage: commands | doctor | inspect <local-file> [--deep]".into()),
     };
