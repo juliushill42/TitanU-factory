@@ -1,0 +1,18 @@
+{
+  "app": "titan-controls-proof",
+  "approved": true,
+  "behaviors": [
+    {
+      "name": "play",
+      "response": "playing"
+    },
+    {
+      "name": "pause",
+      "response": "paused"
+    },
+    {
+      "name": "stop",
+      "response": "stopped"
+    }
+  ]
+}
