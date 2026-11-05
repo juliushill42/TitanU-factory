@@ -11,7 +11,7 @@ mod unix_tests {
     }
     fn binary() -> &'static str { env!("CARGO_BIN_EXE_titanu-craft-inspector") }
     #[test]
-    fn clean_room_invokes_cli_without_allow_run_and_produces_receipt() {
+    fn explicit_deep_invokes_cli_without_allow_run_and_produces_receipt() {
         let dir = sandbox();
         let cli = dir.join("craft-anything-cli");
         fs::write(&cli, "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$TEST_ARGS_FILE\"\nprintf '%s\\n' '{\"result\":\"triage fixture\"}'\n").unwrap();
@@ -20,21 +20,31 @@ mod unix_tests {
         fs::write(&input, b"example").unwrap();
         let log = dir.join("args.txt");
         let proof = dir.join("proof");
-        let result = Command::new(binary()).arg("inspect").arg(&input)
+        let result = Command::new(binary()).arg("inspect").arg(&input).arg("--deep")
             .env("CRAFT_CLI_BIN", &cli).env("TEST_ARGS_FILE", &log)
             .env("TITAN_CRAFT_PROOF_DIR", &proof).output().unwrap();
         assert!(result.status.success(), "{}", String::from_utf8_lossy(&result.stderr));
         let args = fs::read_to_string(log).unwrap();
-        assert!(args.contains("--clean-room"));
+        assert!(args.contains("--deep"));
         assert!(args.contains("triage"));
         assert!(!args.contains("--allow-run"));
         assert!(!args.contains("rebuild"));
         let run = fs::read_dir(proof).unwrap().next().unwrap().unwrap().path();
         let receipt: Value = serde_json::from_slice(&fs::read(run.join("receipt.json")).unwrap()).unwrap();
         assert_eq!(receipt["success"], true);
-        assert_eq!(receipt["deep_mode"], false);
+        assert_eq!(receipt["deep_mode"], true);
         assert_eq!(receipt["execution_authorized"], false);
         assert_eq!(receipt["target_sha256"].as_str().unwrap().len(), 64);
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn unapproved_deep_inspection_is_refused() {
+        let dir = sandbox();
+        let input = dir.join("some.apk");
+        fs::write(&input, b"example").unwrap();
+        let out = Command::new(binary()).arg("inspect").arg(&input).output().unwrap();
+        assert!(!out.status.success());
+        assert!(String::from_utf8_lossy(&out.stderr).contains("--deep"));
         fs::remove_dir_all(dir).unwrap();
     }
     #[test]
