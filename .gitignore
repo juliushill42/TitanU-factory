@@ -4,3 +4,6 @@
 /output/
 /integrations/craft-inspector/target/
 /integrations/craft-inspector/Cargo.lock
+
+/integrations/craft-pipeline/target/
+/integrations/craft-pipeline/Cargo.lock
