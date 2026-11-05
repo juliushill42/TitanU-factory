@@ -67,13 +67,15 @@ fn end_to_end_compile_execute_and_prove() {
     let build_dir = found.expect("compiled receipt");
     let rec: Value = serde_json::from_slice(&fs::read(build_dir.join("build-receipt.json")).unwrap()).unwrap();
     assert_eq!(rec["status"],"verified");
-    assert_eq!(rec["test_count"],3);
+    assert_eq!(rec["test_count"],4);
     assert_eq!(rec["unauthorized_command_denied"],true);
     let artifact = build_dir.join("my-app");
     assert!(artifact.is_file());
     let run = Command::new(&artifact).arg("play").output().unwrap();
     assert_eq!(run.stdout,b"playing\n");
     assert!(run.status.success());
+    let about = Command::new(&artifact).arg("__origin").output().unwrap();
+    assert!(String::from_utf8_lossy(&about.stdout).contains("source_kind=apk"));
     let denied = Command::new(&artifact).arg("wipe").output().unwrap();
     assert!(!denied.status.success());
     fs::remove_dir_all(dir).unwrap();
