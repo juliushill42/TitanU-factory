@@ -123,3 +123,27 @@ fn inspection_without_deep_mode_is_rejected() {
     assert!(String::from_utf8_lossy(&p.stderr).contains("explicit-deep"));
     fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn bind_creates_provenance_anchored_contract() {
+    let dir = tmp();
+    let (_, receipt, _) = fixture(&dir);
+    let proposal = dir.join("proposal.json");
+    fs::write(&proposal, serde_json::to_vec(&json!({
+        "app":"my-app", "approved":true, "behaviors":[
+            {"name":"play","response":"playing"}]
+    })).unwrap()).unwrap();
+    let proof = dir.join("proof");
+    let r = Command::new(exe()).arg("bind").arg(&receipt).arg(&proposal)
+        .env("TITAN_CRAFT_PIPELINE_DIR",&proof).output().unwrap();
+    assert!(r.status.success(),"{}",String::from_utf8_lossy(&r.stderr));
+    let stdout = String::from_utf8(r.stdout).unwrap();
+    let contract = PathBuf::from(stdout.strip_prefix("CONTRACT=").unwrap().trim());
+    let spec: Value = serde_json::from_slice(&fs::read(&contract).unwrap()).unwrap();
+    assert_eq!(spec["evidence_id"],"craft-evidence-001");
+    assert_eq!(spec["source_sha256"],hash(b"owned fixture, not actual apk"));
+    let b = Command::new(exe()).arg("build").arg(&receipt).arg(contract)
+        .env("TITAN_CRAFT_PIPELINE_DIR",&proof).output().unwrap();
+    assert!(b.status.success(),"{}",String::from_utf8_lossy(&b.stderr));
+    fs::remove_dir_all(dir).unwrap();
+}
