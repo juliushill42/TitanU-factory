@@ -1,0 +1,10 @@
+[package]
+name = "titanu-craft-inspector"
+version = "0.1.0"
+edition = "2021"
+description = "Read-only-by-default Craft Anything inspection adapter for TitanU Factory"
+publish = false
+
+[dependencies]
+serde_json = "1"
+sha2 = "0.10"

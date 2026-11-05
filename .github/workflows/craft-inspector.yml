@@ -1,0 +1,26 @@
+name: Craft Inspector Contract Checks
+on:
+  pull_request:
+  push:
+    branches: [craft-inspection-integration]
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust stable
+        run: rustup toolchain install stable --profile minimal --no-self-update
+      - name: Test independent adapter (mock CLI, not upstream engine)
+        run: cargo +stable test --manifest-path integrations/craft-inspector/Cargo.toml -- --nocapture
+      - name: Build release adapter
+        run: cargo +stable build --release --manifest-path integrations/craft-inspector/Cargo.toml
+      - name: Test evidence-to-build pipeline, including real rustc runtime verification against synthetic evidence
+        run: cargo +stable test --manifest-path integrations/craft-pipeline/Cargo.toml -- --nocapture
+      - name: Build release pipeline
+        run: cargo +stable build --release --manifest-path integrations/craft-pipeline/Cargo.toml
+      - name: Check bootstrap shell syntax
+        run: bash -n bootstrap-craft.sh
+      - name: Verify original Factory source remains available
+        run: test -f src/main.rs && test -f Cargo.toml
