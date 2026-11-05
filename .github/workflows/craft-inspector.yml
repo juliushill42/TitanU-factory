@@ -20,5 +20,7 @@ jobs:
         run: cargo +stable test --manifest-path integrations/craft-pipeline/Cargo.toml -- --nocapture
       - name: Build release pipeline
         run: cargo +stable build --release --manifest-path integrations/craft-pipeline/Cargo.toml
+      - name: Check bootstrap shell syntax
+        run: bash -n bootstrap-craft.sh
       - name: Verify original Factory source remains available
         run: test -f src/main.rs && test -f Cargo.toml
