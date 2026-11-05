@@ -16,5 +16,9 @@ jobs:
         run: cargo +stable test --manifest-path integrations/craft-inspector/Cargo.toml -- --nocapture
       - name: Build release adapter
         run: cargo +stable build --release --manifest-path integrations/craft-inspector/Cargo.toml
+      - name: Test evidence-to-build pipeline, including real rustc runtime verification against synthetic evidence
+        run: cargo +stable test --manifest-path integrations/craft-pipeline/Cargo.toml -- --nocapture
+      - name: Build release pipeline
+        run: cargo +stable build --release --manifest-path integrations/craft-pipeline/Cargo.toml
       - name: Verify original Factory source remains available
         run: test -f src/main.rs && test -f Cargo.toml
