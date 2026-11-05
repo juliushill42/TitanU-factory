@@ -1,0 +1,6 @@
+/.craft-source/
+/.craft-tools/
+/proof/
+/output/
+/integrations/craft-inspector/target/
+/integrations/craft-inspector/Cargo.lock
